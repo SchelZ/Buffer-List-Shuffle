@@ -1,5 +1,3 @@
-#include "Injector.h"
-
 #include <vector>
 #include <algorithm>
 #include <random>
@@ -23,6 +21,11 @@ std::vector<std::pair<int, int>> shuffleList(std::vector<uint8_t>& list) {
     return swapHistory;
 }
 
+void unshuffleList(std::vector<uint8_t>& list, const std::vector<std::pair<int, int>>& swapHistory) {
+    for (auto it = swapHistory.rbegin(); it != swapHistory.rend(); ++it)
+        std::swap(list[it->first], list[it->second]);
+}
+
 // Function to write a string to a file
 void writeStringToFile(const std::string& str, const std::string& filename) {
     std::ofstream outFile(filename);
@@ -34,6 +37,7 @@ void writeStringToFile(const std::string& str, const std::string& filename) {
 }
 
 int main() {
+    const uint8_t dllBuffer[] = {0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00};        // example of a dll buffer
     std::vector<uint8_t> list(dllBuffer, dllBuffer + sizeof(dllBuffer) / sizeof(dllBuffer[0]));
 
     std::ostringstream oss;
@@ -54,6 +58,15 @@ int main() {
     // Clear the stringstream for reuse
     oss.str("");
     oss.clear();
+
+    // Unshuffle the list
+    unshuffleList(list, swapHistory);
+
+    oss << "Unshuffled list: ";
+    for (uint8_t i : list) oss << "0x" << std::hex << static_cast<int>(i) << ", ";
+    oss << std::endl;
+
+    std::cout << oss.str();
 
     return 0;
 }
